@@ -24,7 +24,14 @@ public:
         {
             throw std::invalid_argument("Day value is invalid: " + to_string(d));
         }
-        year = y;
+        if (y < 0)
+        {
+            year = y*(-1);
+        }
+        else
+        {
+            year = y;
+        }
         month = m;
         day = d;
     }
@@ -99,7 +106,17 @@ public:
     }
     bool DeleteEvent(const Date& date, const string& event)
     {
-        return bd[date].erase(event);
+        bool result = false;
+        if (bd.count(date)!=0)
+        {
+            result = bd[date].erase(event);
+            if (bd[date].size()==0)
+            {
+                bd.erase(date);
+            }
+            result = result;
+        }
+        return result;
     }
     int  DeleteDate(const Date& date)
     {
@@ -132,23 +149,11 @@ public:
     {
         for(const auto& date : bd)
         {
-            cout << setfill('0')<<setw(4)<<date.first.GetYear()<<"-"<< setw(2)<<date.first.GetMonth()\
-                <<"-"<< setw(2)<<date.first.GetDay() << " ";
-
-            int cnt=0;
             for(const auto& event : date.second)
             {
-                if (cnt == date.second.size()-1)
-                {
-                    cout << event;
-                }
-                else
-                {
-                    cout << event << " ";
-                    cnt++;
-                }
+                cout << setfill('0')<<setw(4)<<date.first.GetYear()<<"-"<< setw(2)<<date.first.GetMonth()\
+                <<"-"<< setw(2)<<date.first.GetDay() << " " << event << endl;    
             }
-            cout << endl;
         }
     }
     void PrintEvents(const Date& date) const
@@ -167,42 +172,6 @@ private:
 };
 /*------------------------------------------ end class Database ------------------------------------*/
 
-Date GetDate(string& str)
-{
-    int year,month,day;
-    stringstream inSStream(str);
-
-    inSStream >> year;
-    if (!inSStream.fail())
-    {
-        inSStream.ignore(1);
-        inSStream >> month;
-        if(!inSStream.fail())
-        {
-            inSStream.ignore(1);
-            inSStream >> day;
-            if(!inSStream.fail())
-            {
-                return Date(year,month,day);
-            }
-            else
-            {
-                throw std::invalid_argument("Wrong date format: " + str);
-            }
-        }
-        else
-        {
-            throw std::invalid_argument("Wrong date format: " + str);
-        }
-    }
-    else
-    {
-        throw std::invalid_argument("Wrong date format: " + str);
-    }
-    
-}
-
-
 int main() {
     Database bd;
 
@@ -218,49 +187,80 @@ int main() {
             inSStream << command;
             string CMD,event,dateStr;
             int year,month,day;
+            char def1,def2;
             inSStream >> CMD;
         
             if ("Add" == CMD)
             {
-                try
-                {   
-                    inSStream >> dateStr;
-                    Date date = GetDate(dateStr);
-                    inSStream >> event;
-                    bd.AddEvent(date,event);
+                inSStream >> year >> def1 >> month >> def2 >> day;
+                if ((inSStream) && (inSStream.peek() == ' ') && (def1 == '-')&& (def2 == '-'))
+                { 
+                    try
+                    {
+                        Date date(year,month,day);
+                        inSStream >> event;
+                        bd.AddEvent(date,event);
+                    }
+                    catch (invalid_argument& ex) 
+                    {
+                        cout << ex.what() << endl;
+                        break;
+                    } 
                 }
-                catch (invalid_argument& ex) 
-                {
-                    cout << ex.what() << endl;
+                else
+                { 
+                    stringstream inSStream2;
+                    string str1,str2;
+                    inSStream2 << command;
+                    inSStream2 >> str1 >> str2;
+                    cout << "Wrong date format: "<< str2 << endl;
                     break;
-                } 
-
-
+                }
             }
             else if ("Del" == CMD)
             {
                 try
                 {   
-                    inSStream >> dateStr;
-                    //cout << "dataStr = " << dateStr << endl;
-                    Date date = GetDate(dateStr);
-
-                    inSStream >> event;
-                    if (event.size()!=0)
+                    inSStream >> year >> def1 >> month >> def2 >> day;
+                    if (!((inSStream) && ((inSStream.peek() == ' ') || (inSStream.peek() == EOF) && (def1 == '-') && (def2 == '-'))))
                     {
-                        //cout << "event = " << event << endl;
-                        if ( true == bd.DeleteEvent(date,event))
+                        stringstream inSStream2;
+                        string str1,str2;
+                        inSStream2 << command;
+                        inSStream2 >> str1 >> str2;
+                        cout << "Wrong date format: "<< str2 << endl;
+                        break;
+                    }
+
+                    if (inSStream.peek() == ' ')
+                    {
+                        Date date(year,month,day);
+                        inSStream >> event;
+                        if (event.size()!=0)
                         {
-                            cout << "Deleted successfully" << endl;
+                            if ( true == bd.DeleteEvent(date,event))
+                            {
+                                cout << "Deleted successfully" << endl;
+                            }
+                            else
+                            {
+                                cout << "Event not found" << endl;
+                            }
                         }
                         else
-                        {
-                            cout << "Event not found" << endl;
+                        {   
+                            stringstream inSStream2;
+                            string str1,str2;
+                            inSStream2 << command;
+                            inSStream2 >> str1 >> str2;
+                            cout << "Wrong date format: "<< str2<< " " << endl;
+                            break;
                         }
                     }
                     else
-                    {   
-                        cout << "Deleted " << bd.DeleteDate(date) << " events" << endl;    
+                    {
+                        Date date(year,month,day);
+                        cout << "Deleted " << bd.DeleteDate(date) << " events" << endl; 
                     }
                 }
                 catch (invalid_argument& ex) 
@@ -273,9 +273,21 @@ int main() {
             {
                 try
                 {   
-                    inSStream >> dateStr;
-                    Date date = GetDate(dateStr);
-                    bd.PrintEvents(date);
+                    inSStream >> year >> def1 >> month >> def2 >> day;
+                    if ((inSStream) && (inSStream.peek() == EOF) && (def1 == '-')&& (def2 == '-'))
+                    {
+                        Date date(year,month,day);
+                        bd.PrintEvents(date);
+                    }
+                    else
+                    { 
+                        stringstream inSStream2;
+                        string str1,str2;
+                        inSStream2 << command;
+                        inSStream2 >> str1 >> str2;
+                        cout << "Wrong date format: "<< str2 << endl;
+                        break;
+                    }
                 }
                 catch (invalid_argument& ex) 
                 {
