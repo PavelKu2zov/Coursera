@@ -5,6 +5,7 @@
 #include <sstream>
 #include <exception>
 #include <stdexcept>
+#include <iomanip>
 
 using namespace std;
 // Реализуйте функции и методы классов и при необходимости добавьте свои
@@ -26,7 +27,6 @@ public:
         year = y;
         month = m;
         day = d;
-        
     }
 
     int GetYear() const
@@ -99,22 +99,7 @@ public:
     }
     bool DeleteEvent(const Date& date, const string& event)
     {
-        if (bd.count(date) !=0 )
-        {
-            if (bd[date].count(event) != 0)
-            {
-                bd[date].erase(event);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            return false;
-        }
+        return bd[date].erase(event);
     }
     int  DeleteDate(const Date& date)
     {
@@ -127,7 +112,8 @@ public:
             }
             else
             {
-                bd[date].clear();
+                //bd[date].clear();
+                bd.erase(date);
                 return numEventsErase;
             }
         }
@@ -146,10 +132,21 @@ public:
     {
         for(const auto& date : bd)
         {
-            cout << date.first.GetYear()<<"-"<< date.first.GetMonth()<<"-"<< date.first.GetDay() << " ";
+            cout << setfill('0')<<setw(4)<<date.first.GetYear()<<"-"<< setw(2)<<date.first.GetMonth()\
+                <<"-"<< setw(2)<<date.first.GetDay() << " ";
+
+            int cnt=0;
             for(const auto& event : date.second)
             {
-                cout << event << " ";
+                if (cnt == date.second.size()-1)
+                {
+                    cout << event;
+                }
+                else
+                {
+                    cout << event << " ";
+                    cnt++;
+                }
             }
             cout << endl;
         }
@@ -170,6 +167,42 @@ private:
 };
 /*------------------------------------------ end class Database ------------------------------------*/
 
+Date GetDate(string& str)
+{
+    int year,month,day;
+    stringstream inSStream(str);
+
+    inSStream >> year;
+    if (!inSStream.fail())
+    {
+        inSStream.ignore(1);
+        inSStream >> month;
+        if(!inSStream.fail())
+        {
+            inSStream.ignore(1);
+            inSStream >> day;
+            if(!inSStream.fail())
+            {
+                return Date(year,month,day);
+            }
+            else
+            {
+                throw std::invalid_argument("Wrong date format: " + str);
+            }
+        }
+        else
+        {
+            throw std::invalid_argument("Wrong date format: " + str);
+        }
+    }
+    else
+    {
+        throw std::invalid_argument("Wrong date format: " + str);
+    }
+    
+}
+
+
 int main() {
     Database bd;
 
@@ -178,103 +211,90 @@ int main() {
     while (getline(cin, command)) 
     {
     // Считайте команды с потока ввода и обработайте каждую
+
         inSStream.clear();
-        inSStream << command;
-        string CMD,event;
-        int year,month,day;
-        inSStream >> CMD;
-       
-        if ("Add" == CMD)
+        if (command.size() != 0)
         {
-            inSStream >> year;
-            inSStream.ignore(1);
-            inSStream >> month;
-            inSStream.ignore(1);
-            inSStream >> day;
-            inSStream.ignore(1);
-
-            try
-            {   
-                Date date(year,month,day);
-                inSStream >> event;
-                bd.AddEvent(date,event);
-            }
-            catch (invalid_argument& ex) 
+            inSStream << command;
+            string CMD,event,dateStr;
+            int year,month,day;
+            inSStream >> CMD;
+        
+            if ("Add" == CMD)
             {
-                cout << ex.what() << endl;
-                break;
-            } 
-
-
-        }
-        else if ("Del" == CMD)
-        {
-            inSStream >> year;
-            inSStream.ignore(1);
-            inSStream >> month;
-            inSStream.ignore(1);
-            inSStream >> day;
-            inSStream.ignore(1);
-
-            try
-            {   
-                Date date(year,month,day);
-                if (inSStream)
-                {
+                try
+                {   
+                    inSStream >> dateStr;
+                    Date date = GetDate(dateStr);
                     inSStream >> event;
-                    if ( true == bd.DeleteEvent(date,event))
+                    bd.AddEvent(date,event);
+                }
+                catch (invalid_argument& ex) 
+                {
+                    cout << ex.what() << endl;
+                    break;
+                } 
+
+
+            }
+            else if ("Del" == CMD)
+            {
+                try
+                {   
+                    inSStream >> dateStr;
+                    //cout << "dataStr = " << dateStr << endl;
+                    Date date = GetDate(dateStr);
+
+                    inSStream >> event;
+                    if (event.size()!=0)
                     {
-                        cout << "Deleted successfully" << endl;
+                        //cout << "event = " << event << endl;
+                        if ( true == bd.DeleteEvent(date,event))
+                        {
+                            cout << "Deleted successfully" << endl;
+                        }
+                        else
+                        {
+                            cout << "Event not found" << endl;
+                        }
                     }
                     else
-                    {
-                        cout << "Event not found" << endl;
+                    {   
+                        cout << "Deleted " << bd.DeleteDate(date) << " events" << endl;    
                     }
                 }
-                else
+                catch (invalid_argument& ex) 
+                {
+                    cout << ex.what() << endl;
+                    break;
+                } 
+            } 
+            else if ("Find" == CMD)
+            {
+                try
                 {   
-                    cout << "Deleted " << bd.DeleteDate(date) << " events" << endl;    
+                    inSStream >> dateStr;
+                    Date date = GetDate(dateStr);
+                    bd.PrintEvents(date);
                 }
-            }
-            catch (invalid_argument& ex) 
-            {
-                cout << ex.what() << endl;
-                break;
-            } 
-        } 
-        else if ("Find" == CMD)
-        {
-             inSStream >> year;
-            inSStream.ignore(1);
-            inSStream >> month;
-            inSStream.ignore(1);
-            inSStream >> day;
-            inSStream.ignore(1);
-            
-            try
-            {   
-                Date date(year,month,day);
-                bd.PrintEvents(date);
-            }
-            catch (invalid_argument& ex) 
-            {
-                cout << ex.what() << endl;
-                break;
-            } 
+                catch (invalid_argument& ex) 
+                {
+                    cout << ex.what() << endl;
+                    break;
+                } 
 
-            
+                
+            }
+            else if ("Print" == CMD)
+            {
+                bd.Print();
+            }
+            else
+            {
+                cout << "Unknown command: " << CMD;
+                break;
+            }
         }
-        else if ("Print" == CMD)
-        {
-            cout << CMD << endl;
-            bd.Print();
-        }
-        else
-        {
-            cout << "Unknown command: " << CMD;
-            break;
-        }
-
     }
 
   return 0;
