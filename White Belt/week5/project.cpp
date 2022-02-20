@@ -144,14 +144,25 @@ public:
 
     void Print() const
     {
-        for(const auto& dates : bd)
+        for(const auto& date : bd)
         {
-            cout << dates.GetYear()<<"-"<< dates.GetMonth()<<"-"<< dates.Getday() << " ";
-            for(const auto& event : dates)
+            cout << date.first.GetYear()<<"-"<< date.first.GetMonth()<<"-"<< date.first.GetDay() << " ";
+            for(const auto& event : date.second)
             {
-                cout << 
+                cout << event << " ";
             }
+            cout << endl;
         }
+    }
+    void PrintEvents(const Date& date) const
+    {
+        if (bd.count(date) !=0)
+        {
+            for(const auto& event : bd.at(date))
+            {
+                cout << event << endl;
+            }
+         }
     }
 private:
     map<Date,set<string>> bd;
@@ -167,10 +178,12 @@ int main() {
     while (getline(cin, command)) 
     {
     // Считайте команды с потока ввода и обработайте каждую
+        inSStream.clear();
         inSStream << command;
         string CMD,event;
         int year,month,day;
         inSStream >> CMD;
+       
         if ("Add" == CMD)
         {
             inSStream >> year;
@@ -196,18 +209,65 @@ int main() {
         }
         else if ("Del" == CMD)
         {
+            inSStream >> year;
+            inSStream.ignore(1);
+            inSStream >> month;
+            inSStream.ignore(1);
+            inSStream >> day;
+            inSStream.ignore(1);
 
+            try
+            {   
+                Date date(year,month,day);
+                if (inSStream)
+                {
+                    inSStream >> event;
+                    if ( true == bd.DeleteEvent(date,event))
+                    {
+                        cout << "Deleted successfully" << endl;
+                    }
+                    else
+                    {
+                        cout << "Event not found" << endl;
+                    }
+                }
+                else
+                {   
+                    cout << "Deleted " << bd.DeleteDate(date) << " events" << endl;    
+                }
+            }
+            catch (invalid_argument& ex) 
+            {
+                cout << ex.what() << endl;
+                break;
+            } 
         } 
         else if ("Find" == CMD)
         {
+             inSStream >> year;
+            inSStream.ignore(1);
+            inSStream >> month;
+            inSStream.ignore(1);
+            inSStream >> day;
+            inSStream.ignore(1);
+            
+            try
+            {   
+                Date date(year,month,day);
+                bd.PrintEvents(date);
+            }
+            catch (invalid_argument& ex) 
+            {
+                cout << ex.what() << endl;
+                break;
+            } 
 
+            
         }
         else if ("Print" == CMD)
         {
-            for(auto& item : bd)
-            {
-                cout bd
-            }
+            cout << CMD << endl;
+            bd.Print();
         }
         else
         {
