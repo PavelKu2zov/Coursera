@@ -7,10 +7,10 @@
 using namespace std;
 
 enum class QueryType {
-  NewBus,
-  BusesForStop,
-  StopsForBus,
-  AllBuses
+    NewBus,
+    BusesForStop,
+    StopsForBus,
+    AllBuses
 };
 
 struct Query {
@@ -23,7 +23,7 @@ struct Query {
 istream& operator >> (istream& is, Query& q) {
     // Реализуйте эту функцию
     string operation_code;
-    is >> operation_code >> operation_code;
+    is >> operation_code;
     if (operation_code == "NEW_BUS")
     {
         q.type = QueryType::NewBus;
@@ -47,30 +47,30 @@ istream& operator >> (istream& is, Query& q) {
     }
     else if (operation_code == "ALL_BUSES")
     {
-        q.type = QueryType::AllBuses; 
+        q.type = QueryType::AllBuses;
     }
     return is;
 }
 
 struct BusesForStopResponse {
-  // Наполните полями эту структуру
-     vector<string> buses;
+    // Наполните полями эту структуру
+    vector<string> buses;
 };
 
 ostream& operator << (ostream& os, const BusesForStopResponse& r) {
     // Реализуйте эту функцию
-    
+
     if (r.buses.size() != 0)
     {
         for(int i=0;i<r.buses.size();i++)
         {
             if(i < r.buses.size()-1)
             {
-                os << r.buses[i] << " ";    
+                os << r.buses[i] << " ";
             }
             else
             {
-                os << r.buses[i] << endl; 
+                os << r.buses[i] << endl;
             }
         }
     }
@@ -84,21 +84,28 @@ ostream& operator << (ostream& os, const BusesForStopResponse& r) {
 
 struct StopsForBusResponse {
     // Наполните полями эту структуру
-    map<string, vector<string>> stops;
+    map<string, vector<string>> buses;
+    vector<string> stops;
+    string bus;
 };
 
 ostream& operator << (ostream& os, const StopsForBusResponse& r) {
     // Реализуйте эту функцию
+
     if (r.stops.size() != 0)
     {
         for(auto& stop : r.stops)
         {
-            os << "Stop " << stop.first << ": ";
-            
-            if (stop.second.size() != 0)
+            os << "Stop " << stop << ": ";
+
+            if (r.buses.at(stop).size() > 1)
             {
-                for(auto& bus : stop.second)
-                os << bus << " ";
+                for(auto& bus : r.buses.at(stop))
+                {
+                    if (r.bus != bus)
+                        os << bus << " ";
+                }
+
             }
             else
             {
@@ -106,6 +113,10 @@ ostream& operator << (ostream& os, const StopsForBusResponse& r) {
             }
             os << endl;
         }
+    }
+    else
+    {
+        os << "No bus" << endl;
     }
     return os;
 }
@@ -125,7 +136,7 @@ ostream& operator << (ostream& os, const AllBusesResponse& r) {
             for(auto& stop : bus.second)
             {
                 os << stop << " ";
-            }                
+            }
             os << endl;
         }
     }
@@ -138,34 +149,47 @@ ostream& operator << (ostream& os, const AllBusesResponse& r) {
 
 class BusManager {
 public:
-void AddBus(const string& bus, const vector<string>& stops) 
-{
-    // Реализуйте этот метод
-    buses_to_stops[bus] = stops;
-    
-    for (const string& stop : stops) 
+    void AddBus(const string& bus, const vector<string>& stops)
     {
-        stops_to_buses[stop].push_back(bus);
+        // Реализуйте этот метод
+        buses_to_stops[bus] = stops;
+
+        for (const string& stop : stops)
+        {
+            stops_to_buses[stop].push_back(bus);
+        }
     }
-}
 
-BusesForStopResponse GetBusesForStop(const string& stop) const 
-{
-    // Реализуйте этот метод
-    return stops_to_buses.at(stop);
-}
+    BusesForStopResponse GetBusesForStop( const string& stop) const
+    {
+        // Реализуйте этот
+        BusesForStopResponse stops;
+        if (stops_to_buses.count(stop) != 0)
+            stops.buses = stops_to_buses.at(stop);
+        return stops;
+    }
 
-StopsForBusResponse GetStopsForBus(const string& bus) const 
-{
-    // Реализуйте этот метод  
-    return buses_to_stops.at(bus);
-}
+    StopsForBusResponse GetStopsForBus(const string& bus) const
+    {
+        // Реализуйте этот метод
+        StopsForBusResponse stopForBus;
+        if (buses_to_stops.count(bus) != 0)
+        {
+            stopForBus.stops = buses_to_stops.at(bus);
+            stopForBus.buses = stops_to_buses;
+            stopForBus.bus = bus;
+        }
+        return stopForBus;
+    }
 
-AllBusesResponse GetAllBuses() const 
-{
-    // Реализуйте этот метод
-    return buses_to_stops;
-}
+    AllBusesResponse GetAllBuses() const
+    {
+        // Реализуйте этот метод
+        AllBusesResponse Allbuses;
+        Allbuses.buses = buses_to_stops;
+        return Allbuses;
+    }
+
 private:
     map<string, vector<string>> buses_to_stops, stops_to_buses;
 };
@@ -173,29 +197,29 @@ private:
 // Не меняя тела функции main, реализуйте функции и классы выше
 
 int main() {
-  int query_count;
-  Query q;
+    int query_count;
+    Query q;
 
-  cin >> query_count;
+    cin >> query_count;
 
-  BusManager bm;
-  for (int i = 0; i < query_count; ++i) {
-    cin >> q;
-    switch (q.type) {
-    case QueryType::NewBus:
-      bm.AddBus(q.bus, q.stops);
-      break;
-    case QueryType::BusesForStop:
-      cout << bm.GetBusesForStop(q.stop) << endl;
-      break;
-    case QueryType::StopsForBus:
-      cout << bm.GetStopsForBus(q.bus) << endl;
-      break;
-    case QueryType::AllBuses:
-      cout << bm.GetAllBuses() << endl;
-      break;
+    BusManager bm;
+    for (int i = 0; i < query_count; ++i) {
+        cin >> q;
+        switch (q.type) {
+            case QueryType::NewBus:
+                bm.AddBus(q.bus, q.stops);
+                break;
+            case QueryType::BusesForStop:
+                cout << bm.GetBusesForStop(q.stop) << endl;
+                break;
+            case QueryType::StopsForBus:
+                cout << bm.GetStopsForBus(q.bus) << endl;
+                break;
+            case QueryType::AllBuses:
+                cout << bm.GetAllBuses() << endl;
+                break;
+        }
     }
-  }
 
-  return 0;
+    return 0;
 }
