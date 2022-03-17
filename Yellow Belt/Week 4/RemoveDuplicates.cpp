@@ -5,18 +5,14 @@
 
 using namespace std;
 
-template <typename T>
-void RemoveDuplicates(vector<T>& elements)
-{
-    if (elements.size()!=0)
-    {
-        auto it2 = end(elements);
-        for (auto it = begin(elements); it != it2; it++) {
-            it2 = remove(it + 1, it2, *it);
-        }
-        elements.erase(it2, end(elements));
-    }
+template <typename DataType>
+void RemoveDuplicates(vector<DataType>& elements) {
+    sort(begin(elements), end(elements));
+    elements.erase(
+            unique(begin(elements), end(elements)),
+            elements.end());
 }
+
 
 /*
 template <typename T>
