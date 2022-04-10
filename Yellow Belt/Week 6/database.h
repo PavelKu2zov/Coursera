@@ -9,6 +9,10 @@
 #include <stdexcept>
 #include <iomanip>
 #include <date.h>
+#include <functional>
+#include <algorithm>
+#include <vector>
+#include <numeric>
 
 using namespace std;
 
@@ -27,6 +31,12 @@ public:
 
     void PrintEvents(const Date& date) const;
 
+    int RemoveIf(function<bool(const Date&, const string&)> p );
+
+    vector<int> FindIf(function<bool(const Date&, const string&)> p );
+
+    string Last(const Date& date) const;
+
 private:
-    map<Date,set<string>> bd;
+    map<Date,vector<string>> bd;
 };

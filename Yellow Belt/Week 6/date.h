@@ -24,6 +24,16 @@ private:
 
 bool operator<(const Date& lhs, const Date& rhs);
 
+bool operator>(const Date& lhs, const Date& rhs);
+
+bool operator>=(const Date& lhs, const Date& rhs);
+
+bool operator<=(const Date& lhs, const Date& rhs);
+
 bool operator==(const Date& lhs, const Date& rhs);
+
+bool operator!=(const Date& lhs, const Date& rhs);
+
+ostream& operator<<(ostream& oStream,const Date& date);
 
 Date ParseDate(istringstream& is);

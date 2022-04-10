@@ -73,6 +73,30 @@ bool operator<(const Date& lhs, const Date& rhs)
     }
 }
 
+bool operator>(const Date& lhs, const Date& rhs)
+{
+    if ((lhs < rhs) || (lhs == rhs))
+        return false;
+    else
+        return true;
+}
+
+bool operator>=(const Date& lhs, const Date& rhs)
+{
+    if ((lhs > rhs) || (lhs == rhs))
+        return true;
+    else
+        return false;
+}
+
+bool operator<=(const Date& lhs, const Date& rhs)
+{
+    if ((lhs < rhs) || (lhs == rhs))
+        return true;
+    else
+        return false;
+}
+
 bool operator==(const Date& lhs, const Date& rhs)
 {
     if ((lhs.GetYear() == rhs.GetYear()) &&  (lhs.GetMonth() == rhs.GetMonth()) && (lhs.GetDay() == rhs.GetDay()))
@@ -82,6 +106,23 @@ bool operator==(const Date& lhs, const Date& rhs)
     return false;
 }
 
+bool operator!=(const Date& lhs, const Date& rhs)
+{
+    if (!(lhs == rhs))
+    {
+        return true;
+    }
+    return false;
+}
+
+ostream& operator<<(ostream& oStream,const Date& date)
+{
+    oStream << to_string(date.GetYear()) << "-" << to_string(date.GetMonth()) <<
+                "-" << to_string(date.GetDay()) << endl;
+    return oStream;
+}
+
+
 Date ParseDate(istringstream& is)
 {
     int year,month,day;
@@ -89,7 +130,7 @@ Date ParseDate(istringstream& is)
 
     is >> year >> def1 >> month >> def2 >> day;
 
-    if ((is) && (is.peek() == ' ') && (def1 == '-')&& (def2 == '-'))
+    if ((is) && (def1 == '-')&& (def2 == '-'))
     {
         try
         {

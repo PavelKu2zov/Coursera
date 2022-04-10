@@ -10,17 +10,30 @@
 using namespace std;
 
 string ParseEvent(istream& is) {
-  // Реализуйте эту функцию
+  string event;
+  is >> std::ws;
+  getline(is,event);
+  return event;
 }
 
 void TestAll();
 
 int main() {
-  TestAll();
+  //TestAll();
 
   Database db;
 
-  for (string line; getline(cin, line); ) {
+    istringstream inputTest(
+            "Add 2017-06-01 3st of June\n"
+            "Add 2017-06-01 1th of July\n"
+            "Add 2017-06-01 2th of July\n"
+            "Add 2017-07-08 20th of July\n"
+            "Print\n"
+            "Del date == 2017-07-08"
+    );
+
+  //for (string line; getline(cin, line); ) {
+      for (string line; getline(inputTest, line); ) {
     istringstream is(line);
 
     string command;
@@ -83,8 +96,62 @@ void TestParseEvent() {
   }
 }
 
+void TestParseDate() {
+    {
+        istringstream is("2017-11-06");
+        AssertEqual(ParseDate(is), Date(2017,11,06), "Parse date without leading spaces");
+    }
+    {
+        istringstream is("   2017-11-06 ");
+        AssertEqual(ParseDate(is), Date(2017,11,06), "Parse date with leading spaces");
+    }
+    {
+        istringstream is("2017-11-6");
+        AssertEqual(ParseDate(is), Date(2017,11,06), "Parse multiple events");
+    }
+}
+
+void TestParseCondition(){
+    {
+        istringstream is("date < 2017-01-01");
+        auto condition = ParseCondition(is);
+        AssertEqual(condition->Evaluate(Date(2017,01,02),""),false, "date < 2017-01-01");
+        AssertEqual(true,true, "date < 2017-01-01");
+    }
+
+    {
+        istringstream is("date < 2017-01-01 AND (event == \"holiday\" OR event == \"sport event\")");
+        auto condition = ParseCondition(is);
+        AssertEqual(condition->Evaluate(Date(2017,01,02),"holiday"),false,
+                    "date < 2017-01-01 AND (event == \"holiday\" OR event == \"sport event\")");
+    }
+
+    {
+        istringstream is("date < 2017-01-01 AND (event == \"holiday\" OR event == \"sport event\")");
+        auto condition = ParseCondition(is);
+        AssertEqual(condition->Evaluate(Date(2016,01,02),"week day"),false,
+                    "date < 2017-01-01 AND (event == \"holiday\" OR event == \"sport event\")");
+    }
+
+    {
+        istringstream is("date < 2017-01-01 AND (event == \"holiday\" OR event == \"sport event\")");
+        auto condition = ParseCondition(is);
+        AssertEqual(condition->Evaluate(Date(2016,01,02),"sport event"),true,
+                    "date < 2017-01-01 AND (event == \"holiday\" OR event == \"sport event\")");
+    }
+
+    {
+        istringstream is("date < 2017-01-01 AND (event == \"holiday\" OR event == \"sport event\")");
+        auto condition = ParseCondition(is);
+        AssertEqual(condition->Evaluate(Date(2016,01,02),"sportevent"),false,
+                    "date < 2017-01-01 AND (event == \"holiday\" OR event == \"sport event\")");
+    }
+
+}
+
 void TestAll() {
   TestRunner tr;
-  tr.RunTest(TestParseEvent, "TestParseEvent");
-  tr.RunTest(TestParseCondition, "TestParseCondition");
+    //tr.RunTest(TestParseDate, "TestParseDate");
+    //tr.RunTest(TestParseEvent, "TestParseEvent");
+    tr.RunTest(TestParseCondition, "TestParseCondition");
 }
