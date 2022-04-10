@@ -24,12 +24,11 @@ int main() {
   Database db;
 
     istringstream inputTest(
-            "Add 2017-06-01 3st of June\n"
-            "Add 2017-06-01 1th of July\n"
-            "Add 2017-06-01 2th of July\n"
-            "Add 2017-07-08 20th of July\n"
-            "Print\n"
-            "Del date == 2017-07-08"
+    "Add 2017-01-01 Holiday\n"
+    "Add 2017-03-08 Holiday\n"
+    "Add 2017-01-01 New Year\n"
+    "Find event != \"working day\"\n"
+    "Add 2017-05-09 Holiday\n"
     );
 
   //for (string line; getline(cin, line); ) {

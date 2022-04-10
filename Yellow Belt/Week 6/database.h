@@ -21,19 +21,13 @@ class Database {
 public:
     void Add(const Date& date,  const string& event);
 
-    bool DeleteEvent(const Date& date, const string& event);
-
-    int  DeleteDate(const Date& date);
-
-    set<string> Find(const Date& date) const;
-
     void Print(ostream& stream) const;
 
     void PrintEvents(const Date& date) const;
 
     int RemoveIf(function<bool(const Date&, const string&)> p );
 
-    vector<int> FindIf(function<bool(const Date&, const string&)> p );
+    vector<string> FindIf(function<bool(const Date&, const string&)> p ) const;
 
     string Last(const Date& date) const;
 

@@ -12,50 +12,7 @@ void Database::Add(const Date& date,  const string& event)
         }
     }
 }
-/*
-bool Database::DeleteEvent(const Date& date, const string& event)
-{
-    bool result = false;
-    if (bd.count(date)!=0)
-    {
-        result = bd[date].erase(event);
-        if (bd[date].size()==0)
-        {
-            bd.erase(date);
-        }
-        result = result;
-    }
-    return result;
-}
-*/
-/*
-int  Database::DeleteDate(const Date& date)
-{
-    if (bd.count(date) !=0 )
-    {
-        int numEventsErase = bd[date].size();
-        if (numEventsErase == 0)
-        {
-            return 0;
-        }
-        else
-        {
-            //bd[date].clear();
-            bd.erase(date);
-            return numEventsErase;
-        }
-    }
-    else
-    {
-        return 0;
-    }
-}
 
-set<string> Database::Find(const Date& date) const
-{
-    return bd.at(date);
-}
-*/
 void Database::Print(ostream& stream) const
 {
     for(const auto& date : bd)
@@ -68,16 +25,6 @@ void Database::Print(ostream& stream) const
     }
 }
 
-void Database::PrintEvents(const Date& date) const
-{
-    if (bd.count(date) !=0)
-    {
-        for(const auto& event : bd.at(date))
-        {
-            cout << event << endl;
-        }
-    }
-}
 
 int Database::RemoveIf(function<bool(const Date&, const string&)> p )
 {
@@ -104,9 +51,28 @@ int Database::RemoveIf(function<bool(const Date&, const string&)> p )
     return countErase;
 }
 
-vector<int> Database::FindIf(function<bool(const Date&, const string&)> p )
+vector<string> Database::FindIf(function<bool(const Date&, const string&)> p ) const
 {
-    return vector<int>{1,2,3};
+    vector<string> result;
+
+    for(auto it = bd.begin(); it != bd.end();it++ )
+    {
+        auto itFind = it->second.begin();
+        
+        while (itFind != it->second.end())
+        {
+            itFind = find_if(itFind, it->second.end(),
+                             [it, p](string str) { return p(it->first, str); });
+
+            if (itFind != it->second.end()) {
+                ostringstream is;
+                is << it->first << " " << *itFind;
+                result.push_back(is.str());
+                itFind++;
+            }
+        }
+    }
+    return result;
 }
 
 string Database::Last(const Date& date) const

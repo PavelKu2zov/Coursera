@@ -117,8 +117,9 @@ bool operator!=(const Date& lhs, const Date& rhs)
 
 ostream& operator<<(ostream& oStream,const Date& date)
 {
-    oStream << to_string(date.GetYear()) << "-" << to_string(date.GetMonth()) <<
-                "-" << to_string(date.GetDay()) << endl;
+    oStream << setfill('0')<<setw(4)<< to_string(date.GetYear()) << "-" << setw(2)<<
+                to_string(date.GetMonth()) <<
+                "-" << setw(2)<< to_string(date.GetDay());
     return oStream;
 }
 
