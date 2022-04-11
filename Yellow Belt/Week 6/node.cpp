@@ -2,6 +2,10 @@
 
 using namespace std;
 
+bool EmptyNode::Evaluate(const Date &date, const string &event)
+    {
+        return true;
+    }
 
 DateComparisonNode::DateComparisonNode(const Comparison &cmp, const Date &date)
     : cmp(cmp),

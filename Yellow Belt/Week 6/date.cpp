@@ -124,7 +124,7 @@ ostream& operator<<(ostream& oStream,const Date& date)
 }
 
 
-Date ParseDate(istringstream& is)
+Date ParseDate(istream& is)
 {
     int year,month,day;
     char def1,def2;

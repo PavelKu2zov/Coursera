@@ -2,14 +2,15 @@
 
 using namespace std;
 
+
 void Database::Add(const Date& date,  const string& event)
 {
-    if (!event.empty()) {
-        if (bd[date].empty()) {
+    if (!event.empty())
+    {
+        int sizeBefore = bdS[date].size();
+        bdS[date].insert(event);
+        if (sizeBefore < bdS[date].size())
             bd[date].push_back(event);
-        } else if (find(begin(bd[date]), end(bd[date]), event) == end(bd[date])) {
-            bd[date].push_back(event);
-        }
     }
 }
 
@@ -29,11 +30,13 @@ void Database::Print(ostream& stream) const
 int Database::RemoveIf(function<bool(const Date&, const string&)> p )
 {
     int countErase = 0;
+    int countEraseLast = 0;
 
     for(auto it = bd.begin(); it != bd.end(); )
     {
         auto itRemove = remove_if(it->second.begin(), it->second.end(),
                   [it, p](string str) { return p(it->first, str); });
+
 
         countErase += it->second.end() - itRemove;
 
@@ -41,10 +44,17 @@ int Database::RemoveIf(function<bool(const Date&, const string&)> p )
 
         if (it->second.empty())
         {
+            bdS.erase(it->first);
             it = bd.erase(it);
         }
         else
         {
+            if (countEraseLast != countErase)
+            {
+                bdS[it->first].clear();
+                bdS[it->first] = std::set<string>(it->second.begin(), it->second.end());
+                countEraseLast = countErase;
+            }
             it++;
         }
     }
@@ -55,12 +65,11 @@ vector<string> Database::FindIf(function<bool(const Date&, const string&)> p ) c
 {
     vector<string> result;
 
-    for(auto it = bd.begin(); it != bd.end();it++ )
-    {
+
+    for (auto it = bd.begin(); it != bd.end(); it++) {
         auto itFind = it->second.begin();
-        
-        while (itFind != it->second.end())
-        {
+
+        while (itFind != it->second.end()) {
             itFind = find_if(itFind, it->second.end(),
                              [it, p](string str) { return p(it->first, str); });
 
@@ -72,10 +81,22 @@ vector<string> Database::FindIf(function<bool(const Date&, const string&)> p ) c
             }
         }
     }
+
     return result;
 }
 
 string Database::Last(const Date& date) const
 {
-    return "";
+    const auto itr_upper = bd.upper_bound(date);
+
+    if (itr_upper == bd.begin())
+    {
+        throw std::invalid_argument("No entries");
+    }
+    ostringstream is;
+    is << prev(itr_upper)->first << " " << prev(itr_upper)->second.back();
+    return is.str();
+
+
+
 }

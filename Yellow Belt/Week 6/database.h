@@ -14,6 +14,7 @@
 #include <vector>
 #include <numeric>
 
+
 using namespace std;
 
 /*---------------------------------------------class Database--------------------------------------*/
@@ -32,5 +33,8 @@ public:
     string Last(const Date& date) const;
 
 private:
+    map<Date,set<string>> bdS;
     map<Date,vector<string>> bd;
+
 };
+
